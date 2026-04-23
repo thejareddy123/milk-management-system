@@ -1,0 +1,87 @@
+{% extends 'layout.html' %}
+{% block title %}Feedback - Provider{% endblock %}
+{% block page_title %}Feedback{% endblock %}
+
+{% block sidebar_nav %}
+<span class="nav-section-label">Overview</span>
+<a href="{{ url_for('provider.dashboard') }}" class="nav-item">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard
+</a>
+<span class="nav-section-label">Reports</span>
+<a href="{{ url_for('provider.reports') }}" class="nav-item">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>My Reports
+</a>
+<span class="nav-section-label">Account</span>
+<a href="{{ url_for('provider.profile') }}" class="nav-item">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>My Profile
+</a>
+<a href="{{ url_for('provider.feedback') }}" class="nav-item active">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Feedback
+</a>
+{% endblock %}
+
+{% block content %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div class="flash-container">
+    {% for cat, msg in messages %}
+    <div class="alert alert-{{ cat }}"><span>{{ msg }}</span><button onclick="this.parentElement.remove()" class="alert-close">×</button></div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:start;">
+    <!-- Submit Form -->
+    <div class="card">
+        <div class="card-header"><span class="card-title">✉️ Submit Feedback</span></div>
+        <div class="card-body">
+            <form method="POST">
+                <div class="form-group">
+                    <label class="form-label">Subject</label>
+                    <input type="text" name="subject" class="form-control" placeholder="Brief subject (optional)">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Message *</label>
+                    <textarea name="message" class="form-control" rows="6" required placeholder="Describe your feedback, question, or issue..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit Feedback</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- History -->
+    <div>
+        <h3 style="font-size:16px; font-weight:700; margin-bottom:16px;">My Submissions</h3>
+        {% if feedbacks %}
+            {% for f in feedbacks %}
+            <div class="card" style="margin-bottom:14px; border-left:4px solid {% if f.status=='resolved' %}var(--green-500){% else %}var(--amber-500){% endif %};">
+                <div class="card-body" style="padding:16px 20px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <strong style="font-size:14px;">{{ f.subject or 'No Subject' }}</strong>
+                        <span class="badge {% if f.status=='resolved' %}badge-success{% else %}badge-warning{% endif %}">
+                            {{ f.status|capitalize }}
+                        </span>
+                    </div>
+                    <p style="font-size:13px; color:var(--gray-600); margin-bottom:8px;">{{ f.message }}</p>
+                    {% if f.admin_response %}
+                    <div style="background:var(--green-50); border:1px solid var(--green-200); border-radius:var(--radius-md); padding:10px 14px; font-size:13px;">
+                        <strong style="color:var(--green-700);">Admin Response:</strong> {{ f.admin_response }}
+                    </div>
+                    {% endif %}
+                    <div style="font-size:11px; color:var(--gray-400); margin-top:8px;">
+                        {{ f.created_at.strftime('%d %b %Y, %I:%M %p') if f.created_at else '' }}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+        <div class="empty-state" style="padding:48px;">
+            <div class="empty-icon">💬</div>
+            <h3>No submissions yet</h3>
+            <p style="font-size:13px;">Use the form to send feedback or ask questions.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

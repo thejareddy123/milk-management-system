@@ -1,0 +1,140 @@
+{% extends 'layout.html' %}
+{% block title %}Suppliers - Admin{% endblock %}
+{% block page_title %}Supplier Management{% endblock %}
+
+{% block sidebar_nav %}
+<span class="nav-section-label">Overview</span>
+<a href="{{ url_for('admin.dashboard') }}" class="nav-item">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard
+</a>
+<span class="nav-section-label">User Management</span>
+<a href="{{ url_for('admin.suppliers') }}" class="nav-item active">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Suppliers
+</a>
+<a href="{{ url_for('admin.providers') }}" class="nav-item">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="5"/><path d="M3 21v-2a7 7 0 0 1 14 0v2"/></svg>Providers
+</a>
+<span class="nav-section-label">Data</span>
+<a href="{{ url_for('admin.milk_entries') }}" class="nav-item">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>Milk Entries
+</a>
+<a href="{{ url_for('admin.rates') }}" class="nav-item">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Milk Rates
+</a>
+<span class="nav-section-label">Support</span>
+<a href="{{ url_for('admin.feedback') }}" class="nav-item">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Feedback
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Suppliers</h2>
+        <p>Approve, reject, and manage supplier accounts</p>
+    </div>
+    <a href="{{ url_for('admin.add_supplier') }}" class="btn btn-primary">+ Add Supplier</a>
+</div>
+
+<!-- Filter Tabs -->
+<div class="tab-bar" style="margin-bottom:20px;">
+    <a href="{{ url_for('admin.suppliers', status='all') }}" class="tab {% if status_filter=='all' %}active{% endif %}">All</a>
+    <a href="{{ url_for('admin.suppliers', status='pending') }}" class="tab {% if status_filter=='pending' %}active{% endif %}">Pending</a>
+    <a href="{{ url_for('admin.suppliers', status='approved') }}" class="tab {% if status_filter=='approved' %}active{% endif %}">Approved</a>
+    <a href="{{ url_for('admin.suppliers', status='rejected') }}" class="tab {% if status_filter=='rejected' %}active{% endif %}">Rejected</a>
+</div>
+
+<div class="card">
+    <div class="table-wrapper">
+        {% if suppliers %}
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Business</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Location</th>
+                    <th>Status</th>
+                    <th>Active</th>
+                    <th>Registered</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in suppliers %}
+                <tr>
+                    <td style="color:var(--gray-400); font-size:12px;">{{ s.id }}</td>
+                    <td><strong>{{ s.name }}</strong></td>
+                    <td>{{ s.business_name }}</td>
+                    <td style="font-size:12px;">{{ s.email }}</td>
+                    <td style="font-family:var(--font-mono); font-size:12px;">{{ s.phone }}</td>
+                    <td>{{ s.location }}</td>
+                    <td>
+                        {% if s.status == 'approved' %}<span class="badge badge-success">Approved</span>
+                        {% elif s.status == 'pending' %}<span class="badge badge-warning">Pending</span>
+                        {% else %}<span class="badge badge-danger">Rejected</span>{% endif %}
+                    </td>
+                    <td>
+                        <span class="badge {% if s.is_active %}badge-success{% else %}badge-danger{% endif %}">
+                            {{ 'Active' if s.is_active else 'Inactive' }}
+                        </span>
+                    </td>
+                    <td style="font-size:12px; color:var(--gray-400);">{{ s.created_at.strftime('%d %b %Y') if s.created_at else '' }}</td>
+                    <td>
+                        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                            <a href="{{ url_for('admin.supplier_detail', supplier_id=s.id) }}" class="btn btn-secondary btn-sm">View</a>
+                            {% if s.status == 'pending' %}
+                            <form method="POST" action="{{ url_for('admin.approve_supplier', supplier_id=s.id) }}" class="inline-form">
+                                <button type="submit" class="btn btn-primary btn-sm">Approve</button>
+                            </form>
+                            <button onclick="openRejectModal({{ s.id }}, '{{ s.name }}')" class="btn btn-danger btn-sm">Reject</button>
+                            {% endif %}
+                            <form method="POST" action="{{ url_for('admin.toggle_supplier_active', supplier_id=s.id) }}" class="inline-form">
+                                <button type="submit" class="btn btn-secondary btn-sm">{{ 'Deactivate' if s.is_active else 'Activate' }}</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">🏢</div>
+            <h3>No suppliers found</h3>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Reject Modal -->
+<div class="modal-overlay" id="rejectModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 class="modal-title">Reject Supplier</h3>
+            <button class="modal-close" onclick="closeModal('rejectModal')">×</button>
+        </div>
+        <p style="color:var(--gray-500); margin-bottom:16px;">Rejecting: <strong id="rejectName"></strong></p>
+        <form method="POST" id="rejectForm">
+            <div class="form-group">
+                <label class="form-label">Reason for Rejection</label>
+                <textarea name="reason" class="form-control" rows="3" placeholder="Provide a reason (optional but recommended)..." style="resize:vertical;"></textarea>
+            </div>
+            <div style="display:flex; gap:10px; justify-content:flex-end;">
+                <button type="button" onclick="closeModal('rejectModal')" class="btn btn-secondary">Cancel</button>
+                <button type="submit" class="btn btn-danger">Confirm Reject</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openRejectModal(id, name) {
+    document.getElementById('rejectName').textContent = name;
+    document.getElementById('rejectForm').action = `/admin/suppliers/${id}/reject`;
+    openModal('rejectModal');
+}
+</script>
+{% endblock %}

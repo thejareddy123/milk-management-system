@@ -1,0 +1,175 @@
+{% extends 'layout.html' %}
+{% block title %}Milk Rates - Admin{% endblock %}
+{% block page_title %}Milk Rate Management{% endblock %}
+
+{% block sidebar_nav %}
+<a href="{{ url_for('admin.dashboard') }}" class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard</a>
+<a href="{{ url_for('admin.suppliers') }}" class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Suppliers</a>
+<a href="{{ url_for('admin.providers') }}" class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="5"/><path d="M3 21v-2a7 7 0 0 1 14 0v2"/></svg>Providers</a>
+<a href="{{ url_for('admin.milk_entries') }}" class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>Milk Entries</a>
+<a href="{{ url_for('admin.rates') }}" class="nav-item active"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Milk Rates</a>
+<a href="{{ url_for('admin.feedback') }}" class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Feedback</a>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Milk Rates</h2>
+        <p>Define price ranges based on fat and SNF content</p>
+    </div>
+    <button onclick="openModal('addRateModal')" class="btn btn-primary">+ Add Rate</button>
+</div>
+
+<!-- Info Banner -->
+<div style="background:var(--blue-100); border:1.5px solid var(--blue-500); border-radius:var(--radius-md); padding:14px 18px; margin-bottom:24px; font-size:13px; color:#1e40af; display:flex; align-items:center; gap:10px;">
+    <span>ℹ️</span>
+    <span>Rates are matched by fat % and SNF % range. When a supplier enters milk data, the system automatically finds the matching rate. Ensure ranges don't overlap to avoid conflicts.</span>
+</div>
+
+<!-- Rates Table -->
+<div class="card">
+    <div class="table-wrapper">
+        {% if rates %}
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Fat Range (%)</th>
+                    <th>SNF Range (%)</th>
+                    <th>Price per Litre (₹)</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in rates %}
+                <tr>
+                    <td style="color:var(--gray-400);">{{ r.id }}</td>
+                    <td style="font-family:var(--font-mono);">{{ r.fat_min }} – {{ r.fat_max }}</td>
+                    <td style="font-family:var(--font-mono);">{{ r.snf_min }} – {{ r.snf_max }}</td>
+                    <td style="font-family:var(--font-mono); font-size:16px; font-weight:700; color:var(--green-700);">₹{{ "%.2f"|format(r.price_per_liter|float) }}</td>
+                    <td>
+                        <span class="badge {% if r.is_active %}badge-success{% else %}badge-danger{% endif %}">
+                            {{ 'Active' if r.is_active else 'Inactive' }}
+                        </span>
+                    </td>
+                    <td>
+                        <div style="display:flex; gap:6px;">
+                            <button onclick="openEditModal({{ r.id }}, {{ r.fat_min }}, {{ r.fat_max }}, {{ r.snf_min }}, {{ r.snf_max }}, {{ r.price_per_liter }}, {{ r.is_active }})" class="btn btn-secondary btn-sm">Edit</button>
+                            <form method="POST" action="{{ url_for('admin.delete_rate', rate_id=r.id) }}" class="inline-form">
+                                <button type="submit" class="btn btn-danger btn-sm" data-confirm="Delete this rate?">Delete</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">💰</div>
+            <h3>No rates defined yet</h3>
+            <p>Add rate ranges to enable milk entry calculations.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Add Rate Modal -->
+<div class="modal-overlay" id="addRateModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 class="modal-title">Add New Rate</h3>
+            <button class="modal-close" onclick="closeModal('addRateModal')">×</button>
+        </div>
+        <form method="POST" action="{{ url_for('admin.add_rate') }}">
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Fat Min (%)</label>
+                    <input type="number" name="fat_min" class="form-control" step="0.01" min="0" max="10" placeholder="e.g. 3.0" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Fat Max (%)</label>
+                    <input type="number" name="fat_max" class="form-control" step="0.01" min="0" max="10" placeholder="e.g. 4.0" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">SNF Min (%)</label>
+                    <input type="number" name="snf_min" class="form-control" step="0.01" min="0" max="15" placeholder="e.g. 8.0" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">SNF Max (%)</label>
+                    <input type="number" name="snf_max" class="form-control" step="0.01" min="0" max="15" placeholder="e.g. 9.0" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Price per Litre (₹)</label>
+                <input type="number" name="price_per_liter" class="form-control" step="0.01" min="0.01" placeholder="e.g. 28.50" required>
+            </div>
+            <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:8px;">
+                <button type="button" onclick="closeModal('addRateModal')" class="btn btn-secondary">Cancel</button>
+                <button type="submit" class="btn btn-primary">Add Rate</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Rate Modal -->
+<div class="modal-overlay" id="editRateModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 class="modal-title">Edit Rate</h3>
+            <button class="modal-close" onclick="closeModal('editRateModal')">×</button>
+        </div>
+        <form method="POST" id="editRateForm">
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Fat Min (%)</label>
+                    <input type="number" name="fat_min" id="edit_fat_min" class="form-control" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Fat Max (%)</label>
+                    <input type="number" name="fat_max" id="edit_fat_max" class="form-control" step="0.01" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">SNF Min (%)</label>
+                    <input type="number" name="snf_min" id="edit_snf_min" class="form-control" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">SNF Max (%)</label>
+                    <input type="number" name="snf_max" id="edit_snf_max" class="form-control" step="0.01" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Price per Litre (₹)</label>
+                <input type="number" name="price_per_liter" id="edit_price" class="form-control" step="0.01" required>
+            </div>
+            <div class="form-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" name="is_active" id="edit_is_active"> Active
+                </label>
+            </div>
+            <div style="display:flex; gap:10px; justify-content:flex-end;">
+                <button type="button" onclick="closeModal('editRateModal')" class="btn btn-secondary">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openEditModal(id, fat_min, fat_max, snf_min, snf_max, price, is_active) {
+    document.getElementById('editRateForm').action = `/admin/rates/${id}/edit`;
+    document.getElementById('edit_fat_min').value = fat_min;
+    document.getElementById('edit_fat_max').value = fat_max;
+    document.getElementById('edit_snf_min').value = snf_min;
+    document.getElementById('edit_snf_max').value = snf_max;
+    document.getElementById('edit_price').value = price;
+    document.getElementById('edit_is_active').checked = !!is_active;
+    openModal('editRateModal');
+}
+</script>
+{% endblock %}

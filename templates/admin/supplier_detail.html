@@ -1,0 +1,123 @@
+{% extends 'layout.html' %}
+{% block title %}Supplier Detail - Admin{% endblock %}
+{% block page_title %}Supplier Detail{% endblock %}
+
+{% block sidebar_nav %}
+<a href="{{ url_for('admin.dashboard') }}" class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard</a>
+<a href="{{ url_for('admin.suppliers') }}" class="nav-item active"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Suppliers</a>
+<a href="{{ url_for('admin.providers') }}" class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="5"/><path d="M3 21v-2a7 7 0 0 1 14 0v2"/></svg>Providers</a>
+<a href="{{ url_for('admin.milk_entries') }}" class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>Milk Entries</a>
+<a href="{{ url_for('admin.rates') }}" class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Milk Rates</a>
+<a href="{{ url_for('admin.feedback') }}" class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Feedback</a>
+{% endblock %}
+
+{% block content %}
+<div style="margin-bottom:20px;">
+    <a href="{{ url_for('admin.suppliers') }}" style="color:var(--gray-400); font-size:13px; text-decoration:none;">← Back to Suppliers</a>
+</div>
+
+<div class="profile-card" style="margin-bottom:28px;">
+    <div class="profile-avatar-lg">{{ supplier.name[0]|upper }}</div>
+    <div class="profile-info">
+        <h2>{{ supplier.name }}</h2>
+        <p>{{ supplier.business_name }} · {{ supplier.location }}</p>
+        <div class="profile-tags">
+            {% if supplier.status == 'approved' %}<span class="profile-tag" style="background:rgba(46,160,92,0.3);">✓ Approved</span>
+            {% elif supplier.status == 'pending' %}<span class="profile-tag" style="background:rgba(245,158,11,0.3);">⏳ Pending</span>
+            {% else %}<span class="profile-tag" style="background:rgba(239,68,68,0.3);">✗ Rejected</span>{% endif %}
+            <span class="profile-tag">📞 {{ supplier.phone }}</span>
+            <span class="profile-tag">✉ {{ supplier.email }}</span>
+        </div>
+    </div>
+</div>
+
+<!-- Stats -->
+<div class="stats-grid" style="margin-bottom:24px;">
+    <div class="stat-card">
+        <div class="stat-icon">🐄</div>
+        <div class="stat-value">{{ provider_count }}</div>
+        <div class="stat-label">Approved Providers</div>
+    </div>
+    <div class="stat-card blue">
+        <div class="stat-icon">🥛</div>
+        <div class="stat-value">{{ "%.1f"|format(total_milk|float) }}</div>
+        <div class="stat-label">Total Milk Collected (L)</div>
+    </div>
+</div>
+
+<!-- Details Card -->
+<div class="card" style="margin-bottom:24px;">
+    <div class="card-header"><span class="card-title">📋 Supplier Details</span></div>
+    <div class="card-body">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:20px;">
+            <div>
+                <div style="font-size:11px; color:var(--gray-400); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px;">Full Name</div>
+                <div style="font-weight:600;">{{ supplier.name }}</div>
+            </div>
+            <div>
+                <div style="font-size:11px; color:var(--gray-400); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px;">Email</div>
+                <div style="font-weight:600;">{{ supplier.email }}</div>
+            </div>
+            <div>
+                <div style="font-size:11px; color:var(--gray-400); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px;">Phone</div>
+                <div style="font-weight:600; font-family:var(--font-mono);">{{ supplier.phone }}</div>
+            </div>
+            <div>
+                <div style="font-size:11px; color:var(--gray-400); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px;">Aadhaar</div>
+                <div style="font-weight:600; font-family:var(--font-mono);">XXXX XXXX {{ supplier.aadhaar[-4:] }}</div>
+            </div>
+            <div>
+                <div style="font-size:11px; color:var(--gray-400); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px;">Business Name</div>
+                <div style="font-weight:600;">{{ supplier.business_name }}</div>
+            </div>
+            <div>
+                <div style="font-size:11px; color:var(--gray-400); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px;">Location</div>
+                <div style="font-weight:600;">{{ supplier.location }}</div>
+            </div>
+            <div>
+                <div style="font-size:11px; color:var(--gray-400); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px;">Registered On</div>
+                <div style="font-weight:600;">{{ supplier.created_at.strftime('%d %b %Y') if supplier.created_at else 'N/A' }}</div>
+            </div>
+            {% if supplier.rejection_reason %}
+            <div>
+                <div style="font-size:11px; color:var(--red-500); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px;">Rejection Reason</div>
+                <div style="font-weight:600; color:var(--red-500);">{{ supplier.rejection_reason }}</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Actions -->
+{% if supplier.status == 'pending' %}
+<div class="card">
+    <div class="card-header"><span class="card-title">⚡ Actions</span></div>
+    <div class="card-body" style="display:flex; gap:12px; flex-wrap:wrap;">
+        <form method="POST" action="{{ url_for('admin.approve_supplier', supplier_id=supplier.id) }}">
+            <button type="submit" class="btn btn-primary">✓ Approve Supplier</button>
+        </form>
+        <button onclick="openModal('rejectModal')" class="btn btn-danger">✗ Reject Supplier</button>
+    </div>
+</div>
+{% endif %}
+
+<!-- Reject Modal -->
+<div class="modal-overlay" id="rejectModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 class="modal-title">Reject Supplier</h3>
+            <button class="modal-close" onclick="closeModal('rejectModal')">×</button>
+        </div>
+        <form method="POST" action="{{ url_for('admin.reject_supplier', supplier_id=supplier.id) }}">
+            <div class="form-group">
+                <label class="form-label">Reason for Rejection</label>
+                <textarea name="reason" class="form-control" rows="3" placeholder="Provide a reason..."></textarea>
+            </div>
+            <div style="display:flex; gap:10px; justify-content:flex-end;">
+                <button type="button" onclick="closeModal('rejectModal')" class="btn btn-secondary">Cancel</button>
+                <button type="submit" class="btn btn-danger">Confirm Reject</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

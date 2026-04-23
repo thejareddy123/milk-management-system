@@ -1,0 +1,113 @@
+{% extends 'layout.html' %}
+{% block title %}Add Milk Entry - Supplier{% endblock %}
+{% block page_title %}Add Milk Entry{% endblock %}
+
+{% block sidebar_nav %}
+<a href="{{ url_for('supplier.dashboard') }}" class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard</a>
+<a href="{{ url_for('supplier.providers') }}" class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="5"/><path d="M3 21v-2a7 7 0 0 1 14 0v2"/></svg>My Providers</a>
+<a href="{{ url_for('supplier.milk_entry') }}" class="nav-item active"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Milk Entry</a>
+<a href="{{ url_for('supplier.milk_data') }}" class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>Milk Reports</a>
+<a href="{{ url_for('supplier.profile') }}" class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profile</a>
+<a href="{{ url_for('supplier.feedback') }}" class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Feedback</a>
+{% endblock %}
+
+{% block content %}
+<div class="page-header"><h2>Add Milk Entry</h2><p>Record morning or evening milk collection for a provider</p></div>
+
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:start;">
+<!-- Entry Form -->
+<div class="entry-form-card">
+    <h3 style="margin-bottom:24px; font-size:17px; display:flex; align-items:center; gap:8px;">🥛 New Entry</h3>
+    
+    {% if not providers %}
+    <div style="background:var(--amber-100); border:1.5px solid var(--amber-500); border-radius:var(--radius-md); padding:16px; font-size:13px; color:#92400e;">
+        ⚠️ No approved providers found. Please approve providers before adding milk entries.
+    </div>
+    {% else %}
+    
+    <form id="milkEntryForm">
+        <div class="form-group">
+            <label class="form-label">Provider *</label>
+            <select name="provider_id" class="form-control" required>
+                <option value="">-- Select Provider --</option>
+                {% for p in providers %}<option value="{{ p.id }}">{{ p.name }}</option>{% endfor %}
+            </select>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Date *</label>
+                <input type="date" name="entry_date" class="form-control" value="{{ today }}" required max="{{ today }}">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Session *</label>
+                <select name="session" class="form-control" required>
+                    <option value="morning">🌅 Morning</option>
+                    <option value="evening">🌙 Evening</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Quantity (Litres) *</label>
+            <input type="number" name="quantity" id="qtyInput" class="form-control" step="0.01" min="0.01" placeholder="e.g. 10.5" required>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Fat % *</label>
+                <input type="number" name="fat" id="fatInput" class="form-control" step="0.01" min="0.01" max="10" placeholder="e.g. 3.5" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">SNF % *</label>
+                <input type="number" name="snf" id="snfInput" class="form-control" step="0.01" min="0.01" max="15" placeholder="e.g. 8.3" required>
+            </div>
+        </div>
+        
+        <input type="hidden" name="rate_id" id="rateIdInput">
+        
+        <!-- Auto Price Preview -->
+        <div class="price-preview" id="pricePreview">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                <div>
+                    <div class="price-label">Rate Match Found</div>
+                    <div class="price-value">-</div>
+                    <div style="font-size:12px; color:var(--gray-400); margin-top:4px;">
+                        Fat: <span class="fat-range">-</span> · SNF: <span class="snf-range">-</span>
+                    </div>
+                </div>
+                <div style="text-align:right;">
+                    <div style="font-size:12px; color:var(--gray-500);">Estimated Total</div>
+                    <div style="font-size:22px; font-weight:700; color:var(--green-700); font-family:var(--font-mono);" id="totalPreview">₹0.00</div>
+                </div>
+            </div>
+        </div>
+        
+        <button type="submit" class="btn btn-primary btn-block" style="margin-top:20px;">Save Milk Entry</button>
+    </form>
+    {% endif %}
+</div>
+
+<!-- Rates Reference -->
+<div>
+    <div class="card">
+        <div class="card-header"><span class="card-title">📊 Available Rates</span></div>
+        <div class="table-wrapper">
+            {% if rates %}
+            <table>
+                <thead><tr><th>Fat (%)</th><th>SNF (%)</th><th>Rate (₹/L)</th></tr></thead>
+                <tbody>
+                    {% for r in rates %}
+                    <tr>
+                        <td style="font-family:var(--font-mono); font-size:12px;">{{ r.fat_min }} – {{ r.fat_max }}</td>
+                        <td style="font-family:var(--font-mono); font-size:12px;">{{ r.snf_min }} – {{ r.snf_max }}</td>
+                        <td style="font-family:var(--font-mono); font-weight:700; color:var(--green-700);">₹{{ "%.2f"|format(r.price_per_liter|float) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state" style="padding:24px;"><p style="color:var(--gray-400); font-size:13px;">No rates configured. Contact admin.</p></div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

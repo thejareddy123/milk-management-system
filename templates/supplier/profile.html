@@ -1,0 +1,77 @@
+{% extends 'layout.html' %}
+{% block title %}Profile - Supplier{% endblock %}
+{% block page_title %}My Profile{% endblock %}
+
+{% block sidebar_nav %}
+<a href="{{ url_for('supplier.dashboard') }}" class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard</a>
+<a href="{{ url_for('supplier.providers') }}" class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="5"/><path d="M3 21v-2a7 7 0 0 1 14 0v2"/></svg>My Providers</a>
+<a href="{{ url_for('supplier.milk_entry') }}" class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Milk Entry</a>
+<a href="{{ url_for('supplier.milk_data') }}" class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>Milk Reports</a>
+<a href="{{ url_for('supplier.profile') }}" class="nav-item active"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profile</a>
+<a href="{{ url_for('supplier.feedback') }}" class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Feedback</a>
+{% endblock %}
+
+{% block content %}
+{% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}<div class="flash-container">{% for cat,msg in messages %}<div class="alert alert-{{ cat }}"><span>{{ msg }}</span><button onclick="this.parentElement.remove()" class="alert-close">×</button></div>{% endfor %}</div>{% endif %}{% endwith %}
+
+<div class="profile-card">
+    <div class="profile-avatar-lg">{{ supplier.name[0]|upper }}</div>
+    <div class="profile-info">
+        <h2>{{ supplier.name }}</h2>
+        <p>{{ supplier.business_name }} · {{ supplier.location }}</p>
+        <div class="profile-tags">
+            <span class="profile-tag">✉ {{ supplier.email }}</span>
+            <span class="profile-tag">📞 {{ supplier.phone }}</span>
+            <span class="profile-tag" style="background:rgba(46,160,92,0.3);">✓ Approved</span>
+        </div>
+    </div>
+</div>
+
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:start;">
+    <!-- Edit Form -->
+    <div class="card">
+        <div class="card-header"><span class="card-title">✏️ Edit Profile</span></div>
+        <div class="card-body">
+            <form method="POST">
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" name="name" class="form-control" value="{{ supplier.name }}" required minlength="2" pattern="[a-zA-Z ]+">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control" value="{{ supplier.email }}" disabled style="background:var(--gray-100); cursor:not-allowed;">
+                    <p class="form-hint">Email cannot be changed</p>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Phone</label>
+                    <input type="tel" name="phone" class="form-control" value="{{ supplier.phone }}" maxlength="10" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Business Name</label>
+                    <input type="text" name="business_name" class="form-control" value="{{ supplier.business_name }}" required minlength="2">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Location</label>
+                    <input type="text" name="location" class="form-control" value="{{ supplier.location }}" required minlength="3">
+                </div>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Details -->
+    <div class="card">
+        <div class="card-header"><span class="card-title">📋 Account Info</span></div>
+        <div class="card-body">
+            <div style="display:flex; flex-direction:column; gap:16px;">
+                {% for label, value in [('Aadhaar', 'XXXX XXXX ' + supplier.aadhaar[-4:]), ('Member Since', supplier.created_at.strftime('%d %b %Y') if supplier.created_at else 'N/A'), ('Account Status', 'Approved')] %}
+                <div>
+                    <div style="font-size:11px; color:var(--gray-400); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:3px;">{{ label }}</div>
+                    <div style="font-weight:600; font-family:{% if 'Aadhaar' in label %}var(--font-mono){% endif %};">{{ value }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

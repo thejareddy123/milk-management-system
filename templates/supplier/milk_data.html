@@ -1,0 +1,87 @@
+{% extends 'layout.html' %}
+{% block title %}Milk Reports - Supplier{% endblock %}
+{% block page_title %}Milk Reports{% endblock %}
+
+{% block sidebar_nav %}
+<a href="{{ url_for('supplier.dashboard') }}" class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard</a>
+<a href="{{ url_for('supplier.providers') }}" class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="5"/><path d="M3 21v-2a7 7 0 0 1 14 0v2"/></svg>My Providers</a>
+<a href="{{ url_for('supplier.milk_entry') }}" class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Milk Entry</a>
+<a href="{{ url_for('supplier.milk_data') }}" class="nav-item active"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>Milk Reports</a>
+<a href="{{ url_for('supplier.profile') }}" class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profile</a>
+<a href="{{ url_for('supplier.feedback') }}" class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Feedback</a>
+{% endblock %}
+
+{% block content %}
+<div class="page-header"><h2>Milk Reports</h2><p>Monthly milk collection data from all providers</p></div>
+
+<!-- Filters -->
+<div class="filter-bar">
+    <form method="GET" style="display:flex; align-items:center; flex-wrap:wrap; gap:10px; width:100%;">
+        <label style="font-size:13px; font-weight:600; color:var(--gray-500);">Filter:</label>
+        <select name="month" onchange="this.form.submit()">
+            {% for m in range(1,13) %}<option value="{{ m }}" {% if m==month %}selected{% endif %}>{{ ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][m] }}</option>{% endfor %}
+        </select>
+        <select name="year" onchange="this.form.submit()">
+            {% for y in range(2023,2027) %}<option value="{{ y }}" {% if y==year %}selected{% endif %}>{{ y }}</option>{% endfor %}
+        </select>
+        <select name="provider_id" onchange="this.form.submit()">
+            <option value="all">All Providers</option>
+            {% for p in providers %}<option value="{{ p.id }}" {% if provider_filter==p.id|string %}selected{% endif %}>{{ p.name }}</option>{% endfor %}
+        </select>
+    </form>
+</div>
+
+<!-- Summary Stats -->
+<div class="stats-grid" style="margin-bottom:24px;">
+    <div class="stat-card"><div class="stat-icon">🥛</div><div class="stat-value">{{ "%.1f"|format(total_qty|float) }} L</div><div class="stat-label">Total Collection</div></div>
+    <div class="stat-card amber"><div class="stat-icon">🌅</div><div class="stat-value">{{ "%.1f"|format(morning_qty|float) }} L</div><div class="stat-label">Morning</div></div>
+    <div class="stat-card blue"><div class="stat-icon">🌙</div><div class="stat-value">{{ "%.1f"|format(evening_qty|float) }} L</div><div class="stat-label">Evening</div></div>
+    <div class="stat-card red"><div class="stat-icon">💰</div><div class="stat-value">₹{{ "%.0f"|format(total_revenue|float) }}</div><div class="stat-label">Total Revenue</div></div>
+</div>
+
+{% if max_day %}
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px;">
+    <div class="card" style="border-left:4px solid var(--green-500);">
+        <div class="card-body" style="padding:16px 20px;">
+            <div style="font-size:11px; text-transform:uppercase; color:var(--gray-400); letter-spacing:0.06em; margin-bottom:4px;">🏆 Best Day</div>
+            <div style="font-size:18px; font-weight:700; font-family:var(--font-mono);">{{ max_day }}</div>
+            <div style="font-size:13px; color:var(--green-700); font-weight:600;">{{ "%.2f"|format(max_day_qty|float) }} L</div>
+        </div>
+    </div>
+    <div class="card" style="border-left:4px solid var(--amber-500);">
+        <div class="card-body" style="padding:16px 20px;">
+            <div style="font-size:11px; text-transform:uppercase; color:var(--gray-400); letter-spacing:0.06em; margin-bottom:4px;">📉 Lowest Day</div>
+            <div style="font-size:18px; font-weight:700; font-family:var(--font-mono);">{{ min_day }}</div>
+            <div style="font-size:13px; color:var(--amber-500); font-weight:600;">{{ "%.2f"|format(min_day_qty|float) }} L</div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Entries Table -->
+<div class="card">
+    <div class="table-wrapper">
+        {% if entries %}
+        <table>
+            <thead><tr><th>Date</th><th>Session</th><th>Provider</th><th>Qty (L)</th><th>Fat %</th><th>SNF %</th><th>Rate (₹/L)</th><th>Total (₹)</th></tr></thead>
+            <tbody>
+                {% for e in entries %}
+                <tr>
+                    <td style="font-family:var(--font-mono); font-size:12px;">{{ e.entry_date }}</td>
+                    <td><span class="badge badge-{{ e.session }}">{{ e.session|capitalize }}</span></td>
+                    <td>{{ e.provider_name }}</td>
+                    <td style="font-family:var(--font-mono);">{{ "%.2f"|format(e.quantity|float) }}</td>
+                    <td style="font-family:var(--font-mono);">{{ "%.2f"|format(e.fat|float) }}</td>
+                    <td style="font-family:var(--font-mono);">{{ "%.2f"|format(e.snf|float) }}</td>
+                    <td style="font-family:var(--font-mono);">₹{{ "%.2f"|format(e.price_per_liter|float) }}</td>
+                    <td style="font-family:var(--font-mono); font-weight:700; color:var(--green-700);">₹{{ "%.2f"|format(e.total|float) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state"><div class="empty-icon">📊</div><h3>No data for selected period</h3></div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

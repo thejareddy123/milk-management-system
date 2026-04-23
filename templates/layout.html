@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-icon">🥛</div>
+            <div class="brand-text">
+                <span class="brand-name">Milk System</span>
+                <span class="brand-role">{{ session.role | capitalize }}</span>
+            </div>
+        </div>
+        
+        <nav class="sidebar-nav">
+            {% block sidebar_nav %}{% endblock %}
+        </nav>
+        
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="user-avatar">{{ session.name[0] | upper }}</div>
+                <div class="user-details">
+                    <span class="user-name">{{ session.name }}</span>
+                    <span class="user-role">{{ session.role | capitalize }}</span>
+                </div>
+            </div>
+            <a href="{{ url_for('auth.logout') }}" class="logout-btn" title="Logout">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            </a>
+        </div>
+    </aside>
+    
+    <!-- Main -->
+    <div class="main-content">
+        <header class="topbar">
+            <button class="sidebar-toggle" id="sidebarToggle">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </button>
+            <div class="topbar-title">{% block page_title %}Dashboard{% endblock %}</div>
+            <div class="topbar-right">
+                <span class="topbar-date" id="topbarDate"></span>
+            </div>
+        </header>
+        
+        <div class="page-content">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                <div class="flash-container">
+                    {% for cat, msg in messages %}
+                    <div class="alert alert-{{ cat }}">
+                        <span>{{ msg }}</span>
+                        <button onclick="this.parentElement.remove()" class="alert-close">×</button>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            {% endwith %}
+            
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+</div>
+{% endblock %}

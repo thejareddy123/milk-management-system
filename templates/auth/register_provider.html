@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% block title %}Register as Provider - Milk Management System{% endblock %}
+{% block body_class %}auth-page{% endblock %}
+
+{% block body %}
+<div class="auth-container" style="max-width:520px;">
+<div class="auth-card">
+    <div class="auth-header">
+        <span class="auth-logo">🐄</span>
+        <h1>Provider Registration</h1>
+        <p>Join as a milk provider</p>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div style="margin-bottom:20px;">
+            {% for cat, msg in messages %}
+            <div class="alert alert-{{ cat }}"><span>{{ msg }}</span><button onclick="this.parentElement.remove()" class="alert-close">×</button></div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST">
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Full Name *</label>
+                <input type="text" name="name" class="form-control" placeholder="Theja" required minlength="2" pattern="[a-zA-Z ]+">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Email Address *</label>
+                <input type="email" name="email" class="form-control" placeholder="theja@gmail.com" required>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Phone Number *</label>
+                <input type="tel" name="phone" class="form-control" placeholder="9876543210" maxlength="10" required>
+                <p class="form-hint">10 digits, starts with 6-9</p>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Aadhaar Number *</label>
+                <input type="text" name="aadhaar" class="form-control" placeholder="123456789012" maxlength="12" minlength="12" pattern="\d{12}" required>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Select Supplier *</label>
+            <select name="supplier_id" class="form-control" required>
+                <option value="">-- Select your supplier --</option>
+                {% for s in suppliers %}
+                <option value="{{ s.id }}">{{ s.business_name }} ({{ s.name }})</option>
+                {% endfor %}
+            </select>
+            <p class="form-hint">Only approved suppliers are listed</p>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Password *</label>
+                <input type="password" name="password" id="passwordInput" class="form-control" placeholder="Min 8 chars" required minlength="8">
+                <p class="form-hint" style="margin-top:4px;"><span id="pwStrength"></span></p>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Confirm Password *</label>
+                <input type="password" name="confirm_password" id="confirmPw" class="form-control" placeholder="Re-enter password" required>
+                <p class="form-hint" id="pwMatch" style="margin-top:4px;"></p>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="checkbox-label">
+                <input type="checkbox" name="terms" required>
+                I agree to the <a href="{{ url_for('auth.terms') }}" target="_blank" style="color:var(--green-700);">Terms & Conditions</a>
+            </label>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block btn-lg">Send OTP & Register</button>
+    </form>
+
+    <div class="divider">Already have an account?</div>
+    <a href="{{ url_for('auth.login') }}" class="btn btn-secondary btn-block">Back to Login</a>
+</div>
+</div>
+<script>
+document.getElementById('confirmPw').addEventListener('input', function() {
+    const pw = document.getElementById('passwordInput').value;
+    const pm = document.getElementById('pwMatch');
+    if (this.value === pw) { pm.textContent = '✓ Passwords match'; pm.style.color = 'var(--green-600)'; }
+    else { pm.textContent = '✗ Passwords do not match'; pm.style.color = 'var(--red-500)'; }
+});
+document.querySelector('input[name="phone"]').addEventListener('input', function() {
+    this.value = this.value.replace(/\D/g, '').slice(0, 10);
+});
+document.querySelector('input[name="aadhaar"]').addEventListener('input', function() {
+    this.value = this.value.replace(/\D/g, '').slice(0, 12);
+});
+</script>
+{% endblock %}

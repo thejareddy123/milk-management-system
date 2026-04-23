@@ -1,0 +1,63 @@
+{% extends 'layout.html' %}
+{% block title %}Providers - Admin{% endblock %}
+{% block page_title %}Provider Management{% endblock %}
+
+{% block sidebar_nav %}
+<a href="{{ url_for('admin.dashboard') }}" class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard</a>
+<a href="{{ url_for('admin.suppliers') }}" class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Suppliers</a>
+<a href="{{ url_for('admin.providers') }}" class="nav-item active"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="5"/><path d="M3 21v-2a7 7 0 0 1 14 0v2"/></svg>Providers</a>
+<a href="{{ url_for('admin.milk_entries') }}" class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>Milk Entries</a>
+<a href="{{ url_for('admin.rates') }}" class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Milk Rates</a>
+<a href="{{ url_for('admin.feedback') }}" class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Feedback</a>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div><h2>Providers</h2><p>View and manage all milk providers</p></div>
+    <a href="{{ url_for('admin.add_provider') }}" class="btn btn-primary">+ Add Provider</a>
+</div>
+
+<div class="tab-bar">
+    <a href="{{ url_for('admin.providers', status='all') }}" class="tab {% if status_filter=='all' %}active{% endif %}">All</a>
+    <a href="{{ url_for('admin.providers', status='pending') }}" class="tab {% if status_filter=='pending' %}active{% endif %}">Pending</a>
+    <a href="{{ url_for('admin.providers', status='approved') }}" class="tab {% if status_filter=='approved' %}active{% endif %}">Approved</a>
+    <a href="{{ url_for('admin.providers', status='rejected') }}" class="tab {% if status_filter=='rejected' %}active{% endif %}">Rejected</a>
+</div>
+
+<div class="card">
+    <div class="table-wrapper">
+        {% if providers %}
+        <table>
+            <thead>
+                <tr><th>#</th><th>Name</th><th>Email</th><th>Phone</th><th>Supplier</th><th>Status</th><th>Active</th><th>Registered</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+                {% for p in providers %}
+                <tr>
+                    <td style="color:var(--gray-400); font-size:12px;">{{ p.id }}</td>
+                    <td><strong>{{ p.name }}</strong></td>
+                    <td style="font-size:12px;">{{ p.email }}</td>
+                    <td style="font-family:var(--font-mono); font-size:12px;">{{ p.phone }}</td>
+                    <td><span style="font-size:12px;">{{ p.business_name }}</span><br><span style="color:var(--gray-400); font-size:11px;">{{ p.supplier_name }}</span></td>
+                    <td>
+                        {% if p.status == 'approved' %}<span class="badge badge-success">Approved</span>
+                        {% elif p.status == 'pending' %}<span class="badge badge-warning">Pending</span>
+                        {% else %}<span class="badge badge-danger">Rejected</span>{% endif %}
+                    </td>
+                    <td><span class="badge {% if p.is_active %}badge-success{% else %}badge-danger{% endif %}">{{ 'Active' if p.is_active else 'Inactive' }}</span></td>
+                    <td style="font-size:12px; color:var(--gray-400);">{{ p.created_at.strftime('%d %b %Y') if p.created_at else '' }}</td>
+                    <td>
+                        <form method="POST" action="{{ url_for('admin.toggle_provider_active', provider_id=p.id) }}" class="inline-form">
+                            <button type="submit" class="btn btn-secondary btn-sm">{{ 'Deactivate' if p.is_active else 'Activate' }}</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state"><div class="empty-icon">🐄</div><h3>No providers found</h3></div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,167 @@
+{% extends 'layout.html' %}
+{% block title %}Provider Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block sidebar_nav %}
+<span class="nav-section-label">Overview</span>
+<a href="{{ url_for('provider.dashboard') }}" class="nav-item active">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard
+</a>
+<span class="nav-section-label">Reports</span>
+<a href="{{ url_for('provider.reports') }}" class="nav-item">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>My Reports
+</a>
+<span class="nav-section-label">Account</span>
+<a href="{{ url_for('provider.profile') }}" class="nav-item">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>My Profile
+</a>
+<a href="{{ url_for('provider.feedback') }}" class="nav-item">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Feedback
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Welcome, {{ provider.name }}! 🐄</h2>
+        <p>Supplied to: <strong>{{ provider.business_name }}</strong> · {{ provider.supplier_location }}</p>
+    </div>
+    <form method="GET" style="display:flex; align-items:center; gap:8px;">
+        <select name="month" class="form-control" style="width:auto;" onchange="this.form.submit()">
+            {% for m in range(1,13) %}
+            <option value="{{ m }}" {% if m==month %}selected{% endif %}>
+                {{ ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][m] }}
+            </option>
+            {% endfor %}
+        </select>
+        <select name="year" class="form-control" style="width:auto;" onchange="this.form.submit()">
+            {% for y in range(2023,2027) %}
+            <option value="{{ y }}" {% if y==year %}selected{% endif %}>{{ y }}</option>
+            {% endfor %}
+        </select>
+    </form>
+</div>
+
+<!-- Stats Grid -->
+<div class="stats-grid">
+    <div class="stat-card amber">
+        <div class="stat-icon">🌅</div>
+        <div class="stat-value">{{ "%.1f"|format(stats.morning_qty|float) }} L</div>
+        <div class="stat-label">Morning Milk</div>
+        <div class="stat-change">₹{{ "%.2f"|format(stats.morning_income|float) }}</div>
+    </div>
+    <div class="stat-card blue">
+        <div class="stat-icon">🌙</div>
+        <div class="stat-value">{{ "%.1f"|format(stats.evening_qty|float) }} L</div>
+        <div class="stat-label">Evening Milk</div>
+        <div class="stat-change">₹{{ "%.2f"|format(stats.evening_income|float) }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">🥛</div>
+        <div class="stat-value">{{ "%.1f"|format(stats.total_qty|float) }} L</div>
+        <div class="stat-label">Total Milk</div>
+    </div>
+    <div class="stat-card red">
+        <div class="stat-icon">💰</div>
+        <div class="stat-value">₹{{ "%.2f"|format(stats.total_income|float) }}</div>
+        <div class="stat-label">Total Income</div>
+    </div>
+</div>
+
+<!-- Today's Entries -->
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:24px;">
+    <div class="card">
+        <div class="card-header"><span class="card-title">📅 Today's Entries ({{ today }})</span></div>
+        <div class="card-body">
+            {% if today_entries %}
+                {% for e in today_entries %}
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--gray-100);">
+                    <div>
+                        <span class="badge badge-{{ e.session }}">{{ e.session|capitalize }}</span>
+                        <span style="font-size:13px; color:var(--gray-600); margin-left:8px;">Fat: {{ "%.2f"|format(e.fat|float) }}% · SNF: {{ "%.2f"|format(e.snf|float) }}%</span>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-weight:700; font-family:var(--font-mono);">{{ "%.2f"|format(e.quantity|float) }} L</div>
+                        <div style="font-size:12px; color:var(--green-700); font-weight:600;">₹{{ "%.2f"|format(e.total|float) }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+            <div style="text-align:center; padding:24px; color:var(--gray-400);">
+                <div style="font-size:32px; margin-bottom:8px;">🌾</div>
+                <p style="font-size:13px;">No entries recorded today yet</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Supplier Info -->
+    <div class="card">
+        <div class="card-header"><span class="card-title">🏢 My Supplier</span></div>
+        <div class="card-body">
+            <div style="display:flex; flex-direction:column; gap:14px;">
+                <div>
+                    <div style="font-size:11px; color:var(--gray-400); text-transform:uppercase; margin-bottom:3px;">Business</div>
+                    <div style="font-weight:700; font-size:15px;">{{ provider.business_name }}</div>
+                </div>
+                <div>
+                    <div style="font-size:11px; color:var(--gray-400); text-transform:uppercase; margin-bottom:3px;">Contact Person</div>
+                    <div style="font-weight:600;">{{ provider.supplier_name }}</div>
+                </div>
+                <div>
+                    <div style="font-size:11px; color:var(--gray-400); text-transform:uppercase; margin-bottom:3px;">Phone</div>
+                    <div style="font-weight:600; font-family:var(--font-mono);">{{ provider.supplier_phone }}</div>
+                </div>
+                <div>
+                    <div style="font-size:11px; color:var(--gray-400); text-transform:uppercase; margin-bottom:3px;">Location</div>
+                    <div style="font-weight:600;">{{ provider.supplier_location }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Entries -->
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">📋 Recent Entries</span>
+        <a href="{{ url_for('provider.reports') }}" class="btn btn-secondary btn-sm">View All Reports</a>
+    </div>
+    <div class="table-wrapper">
+        {% if recent %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Session</th>
+                    <th>Qty (L)</th>
+                    <th>Fat %</th>
+                    <th>SNF %</th>
+                    <th>Rate (₹/L)</th>
+                    <th>Total (₹)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for e in recent %}
+                <tr>
+                    <td style="font-family:var(--font-mono); font-size:12px;">{{ e.entry_date }}</td>
+                    <td><span class="badge badge-{{ e.session }}">{{ e.session|capitalize }}</span></td>
+                    <td style="font-family:var(--font-mono);">{{ "%.2f"|format(e.quantity|float) }}</td>
+                    <td style="font-family:var(--font-mono);">{{ "%.2f"|format(e.fat|float) }}</td>
+                    <td style="font-family:var(--font-mono);">{{ "%.2f"|format(e.snf|float) }}</td>
+                    <td style="font-family:var(--font-mono);">₹{{ "%.2f"|format(e.price_per_liter|float) }}</td>
+                    <td style="font-family:var(--font-mono); font-weight:700; color:var(--green-700);">₹{{ "%.2f"|format(e.total|float) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">🥛</div>
+            <h3>No entries recorded yet</h3>
+            <p style="font-size:13px;">Your supplier will record your milk entries.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

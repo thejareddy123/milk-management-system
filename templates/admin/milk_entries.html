@@ -1,0 +1,80 @@
+{% extends 'layout.html' %}
+{% block title %}Milk Entries - Admin{% endblock %}
+{% block page_title %}Milk Entries{% endblock %}
+
+{% block sidebar_nav %}
+<a href="{{ url_for('admin.dashboard') }}" class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard</a>
+<a href="{{ url_for('admin.suppliers') }}" class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Suppliers</a>
+<a href="{{ url_for('admin.providers') }}" class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="5"/><path d="M3 21v-2a7 7 0 0 1 14 0v2"/></svg>Providers</a>
+<a href="{{ url_for('admin.milk_entries') }}" class="nav-item active"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>Milk Entries</a>
+<a href="{{ url_for('admin.rates') }}" class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Milk Rates</a>
+<a href="{{ url_for('admin.feedback') }}" class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Feedback</a>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div><h2>Milk Entries</h2><p>View all recorded milk collection data</p></div>
+</div>
+
+<!-- Filters -->
+<div class="filter-bar">
+    <form method="GET" style="display:flex; align-items:center; flex-wrap:wrap; gap:10px; width:100%;">
+        <label style="font-size:13px; font-weight:600; color:var(--gray-500);">Month:</label>
+        <select name="month" onchange="this.form.submit()">
+            {% for m in range(1,13) %}
+            <option value="{{ m }}" {% if m==month %}selected{% endif %}>
+                {{ ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][m] }}
+            </option>
+            {% endfor %}
+        </select>
+        <select name="year" onchange="this.form.submit()">
+            {% for y in range(2023, 2027) %}
+            <option value="{{ y }}" {% if y==year %}selected{% endif %}>{{ y }}</option>
+            {% endfor %}
+        </select>
+        <select name="supplier_id" onchange="this.form.submit()">
+            <option value="all">All Suppliers</option>
+            {% for s in suppliers %}
+            <option value="{{ s.id }}" {% if supplier_filter==s.id|string %}selected{% endif %}>{{ s.business_name }}</option>
+            {% endfor %}
+        </select>
+    </form>
+</div>
+
+<!-- Summary -->
+<div class="stats-grid" style="margin-bottom:24px;">
+    <div class="stat-card"><div class="stat-icon">📊</div><div class="stat-value">{{ "%.1f"|format(total_qty|float) }} L</div><div class="stat-label">Total Collection</div></div>
+    <div class="stat-card amber"><div class="stat-icon">🌅</div><div class="stat-value">{{ "%.1f"|format(morning_qty|float) }} L</div><div class="stat-label">Morning</div></div>
+    <div class="stat-card blue"><div class="stat-icon">🌙</div><div class="stat-value">{{ "%.1f"|format(evening_qty|float) }} L</div><div class="stat-label">Evening</div></div>
+    <div class="stat-card red"><div class="stat-icon">💰</div><div class="stat-value">₹{{ "%.0f"|format(total_revenue|float) }}</div><div class="stat-label">Total Revenue</div></div>
+</div>
+
+<div class="card">
+    <div class="table-wrapper">
+        {% if entries %}
+        <table>
+            <thead>
+                <tr><th>Date</th><th>Session</th><th>Provider</th><th>Supplier</th><th>Qty (L)</th><th>Fat %</th><th>SNF %</th><th>Rate (₹/L)</th><th>Total (₹)</th></tr>
+            </thead>
+            <tbody>
+                {% for e in entries %}
+                <tr>
+                    <td style="font-family:var(--font-mono); font-size:12px;">{{ e.entry_date }}</td>
+                    <td><span class="badge badge-{{ e.session }}">{{ e.session|capitalize }}</span></td>
+                    <td>{{ e.provider_name }}</td>
+                    <td style="font-size:12px;">{{ e.supplier_name }}</td>
+                    <td style="font-family:var(--font-mono);">{{ "%.2f"|format(e.quantity|float) }}</td>
+                    <td style="font-family:var(--font-mono);">{{ "%.2f"|format(e.fat|float) }}</td>
+                    <td style="font-family:var(--font-mono);">{{ "%.2f"|format(e.snf|float) }}</td>
+                    <td style="font-family:var(--font-mono);">₹{{ "%.2f"|format(e.price_per_liter|float) }}</td>
+                    <td style="font-family:var(--font-mono); font-weight:700; color:var(--green-700);">₹{{ "%.2f"|format(e.total|float) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state"><div class="empty-icon">🥛</div><h3>No entries for selected period</h3></div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

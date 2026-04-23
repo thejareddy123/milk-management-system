@@ -1,0 +1,39 @@
+{% extends 'layout.html' %}
+{% block title %}Add Supplier - Admin{% endblock %}
+{% block page_title %}Add Supplier{% endblock %}
+
+{% block sidebar_nav %}
+<a href="{{ url_for('admin.dashboard') }}" class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard</a>
+<a href="{{ url_for('admin.suppliers') }}" class="nav-item active"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Suppliers</a>
+<a href="{{ url_for('admin.providers') }}" class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="5"/><path d="M3 21v-2a7 7 0 0 1 14 0v2"/></svg>Providers</a>
+<a href="{{ url_for('admin.milk_entries') }}" class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>Milk Entries</a>
+<a href="{{ url_for('admin.rates') }}" class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Milk Rates</a>
+<a href="{{ url_for('admin.feedback') }}" class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Feedback</a>
+{% endblock %}
+
+{% block content %}
+<div style="margin-bottom:20px;"><a href="{{ url_for('admin.suppliers') }}" style="color:var(--gray-400); font-size:13px; text-decoration:none;">← Back to Suppliers</a></div>
+<div class="entry-form-card" style="max-width:600px;">
+    <h2 style="margin-bottom:24px; font-size:20px;">Add Supplier Manually</h2>
+    {% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}{% for cat,msg in messages %}<div class="alert alert-{{ cat }}" style="margin-bottom:16px;"><span>{{ msg }}</span><button onclick="this.parentElement.remove()" class="alert-close">×</button></div>{% endfor %}{% endif %}{% endwith %}
+    <form method="POST">
+        <div class="form-row">
+            <div class="form-group"><label class="form-label">Full Name *</label><input type="text" name="name" class="form-control" required minlength="2"></div>
+            <div class="form-group"><label class="form-label">Email *</label><input type="email" name="email" class="form-control" required></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label class="form-label">Phone *</label><input type="tel" name="phone" class="form-control" maxlength="10" required></div>
+            <div class="form-group"><label class="form-label">Aadhaar *</label><input type="text" name="aadhaar" class="form-control" maxlength="12" minlength="12" required></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label class="form-label">Business Name *</label><input type="text" name="business_name" class="form-control" required></div>
+            <div class="form-group"><label class="form-label">Location *</label><input type="text" name="location" class="form-control" required></div>
+        </div>
+        <div class="form-group"><label class="form-label">Password *</label><input type="password" name="password" class="form-control" required minlength="8"></div>
+        <div style="display:flex; gap:10px; margin-top:8px;">
+            <a href="{{ url_for('admin.suppliers') }}" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary">Add & Approve Supplier</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

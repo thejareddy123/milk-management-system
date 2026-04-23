@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Verify OTP - Milk Management System{% endblock %}
+{% block body_class %}auth-page{% endblock %}
+
+{% block body %}
+<div class="auth-container">
+<div class="auth-card">
+    <div class="auth-header">
+        <span class="auth-logo">🔐</span>
+        <h1>Verify OTP</h1>
+        <p>Enter the 6-digit code sent to<br><strong>{{ email }}</strong></p>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div style="margin-bottom:20px;">
+            {% for cat, msg in messages %}
+            <div class="alert alert-{{ cat }}"><span>{{ msg }}</span><button onclick="this.parentElement.remove()" class="alert-close">×</button></div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST">
+        <div class="otp-container">
+            <input type="text" class="otp-input" maxlength="1" inputmode="numeric" autocomplete="off">
+            <input type="text" class="otp-input" maxlength="1" inputmode="numeric" autocomplete="off">
+            <input type="text" class="otp-input" maxlength="1" inputmode="numeric" autocomplete="off">
+            <input type="text" class="otp-input" maxlength="1" inputmode="numeric" autocomplete="off">
+            <input type="text" class="otp-input" maxlength="1" inputmode="numeric" autocomplete="off">
+            <input type="text" class="otp-input" maxlength="1" inputmode="numeric" autocomplete="off">
+        </div>
+        <input type="hidden" name="otp" id="otpHidden">
+
+        <button type="submit" class="btn btn-primary btn-block btn-lg" id="verifyBtn">Verify OTP</button>
+    </form>
+
+    <div style="text-align:center; margin-top:20px;">
+        <p style="color:var(--gray-500); font-size:13px; margin-bottom:10px;">Didn't receive the code?</p>
+        <button class="btn btn-secondary" id="resendOtpBtn">Resend OTP</button>
+    </div>
+
+    <div style="text-align:center; margin-top:16px;">
+        <a href="{{ url_for('auth.login') }}" style="font-size:13px; color:var(--gray-400);">← Back to Login</a>
+    </div>
+</div>
+</div>
+{% endblock %}
