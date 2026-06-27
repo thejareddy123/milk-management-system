@@ -5,9 +5,7 @@ from extensions import mysql, mail, bcrypt
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
-    app.config["MYSQL_CUSTOM_OPTIONS"] = {
-    "ssl": {"ca": app.config["MYSQL_SSL_CA"]}
-        }
+    
     
     #extensions
     mysql.init_app(app)
