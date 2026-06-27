@@ -1,34 +1,38 @@
 import os
 from datetime import timedelta
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 class Config:
-    SECRET_KEY = os.environ.get('SECRET_KEY', 'milkmanagementsecretkey')
-    
-    #Mysql
-    MYSQL_HOST = os.environ.get('MYSQL_HOST', 'localhost')
-    MYSQL_USER = os.environ.get('MYSQL_USER', 'root')
-    MYSQL_PASSWORD = os.environ.get('MYSQL_PASSWORD', 'Theja@123') 
-    MYSQL_DB = os.environ.get('MYSQL_DB', 'milk_management')
-    MYSQL_CURSORCLASS = 'DictCursor'
-    
-    #session
+    SECRET_KEY = os.getenv("SECRET_KEY")
+
+    # MySQL
+    MYSQL_HOST = os.getenv("MYSQL_HOST")
+    MYSQL_USER = os.getenv("MYSQL_USER")
+    MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD")
+    MYSQL_DB = os.getenv("MYSQL_DB")
+    MYSQL_CURSORCLASS = "DictCursor"
+
+    # Session
     PERMANENT_SESSION_LIFETIME = timedelta(hours=2)
     SESSION_COOKIE_SECURE = False
     SESSION_COOKIE_HTTPONLY = True
-    SESSION_COOKIE_SAMESITE = 'Lax'
-    
-    #email (SMTP)
-    MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
-    MAIL_PORT = int(os.environ.get('MAIL_PORT', 587))
+    SESSION_COOKIE_SAMESITE = "Lax"
+
+    # Email
+    MAIL_SERVER = os.getenv("MAIL_SERVER")
+    MAIL_PORT = int(os.getenv("MAIL_PORT", 587))
     MAIL_USE_TLS = True
-    MAIL_USERNAME = os.environ.get('MAIL_USERNAME', 'thejareddy5569@gmail.com')
-    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD', 'crqozrgytxawykon')
-    MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER', 'MilkMgmt <thejareddy5569@gmail.com>')
-    
-    #Otp
+    MAIL_USERNAME = os.getenv("MAIL_USERNAME")
+    MAIL_PASSWORD = os.getenv("MAIL_PASSWORD")
+    MAIL_DEFAULT_SENDER = os.getenv("MAIL_DEFAULT_SENDER")
+
+    # OTP
     OTP_EXPIRY_MINUTES = 5
     OTP_RESEND_COOLDOWN_SECONDS = 30
-    
-    # App
-    ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', 'reddytheja65@gmail.com')
-    ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'Theja@123')
+
+    # Admin
+    ADMIN_EMAIL = os.getenv("ADMIN_EMAIL")
+    ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")

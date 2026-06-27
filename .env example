@@ -1,0 +1,15 @@
+SECRET_KEY=your-secret-key
+
+MYSQL_HOST=localhost
+MYSQL_USER=root
+MYSQL_PASSWORD=your_mysql_password
+MYSQL_DB=milk_management
+
+MAIL_SERVER=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=[your_email@gmail.com](mailto:your_email@gmail.com)
+MAIL_PASSWORD=your_gmail_app_password
+MAIL_DEFAULT_SENDER=MilkMgmt [your_email@gmail.com](mailto:your_email@gmail.com)
+
+ADMIN_EMAIL=[admin@example.com](mailto:admin@example.com)
+ADMIN_PASSWORD=your_admin_password
