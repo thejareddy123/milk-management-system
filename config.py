@@ -15,6 +15,7 @@ class Config:
     MYSQL_DB = os.getenv("MYSQL_DB")
     MYSQL_CURSORCLASS = "DictCursor"
     MYSQL_PORT = int(os.environ.get("MYSQL_PORT", 3306))
+    MYSQL_SSL_CA = os.path.join(os.path.dirname(__file__), "certs", "ca.pem")
 
     # Session
     PERMANENT_SESSION_LIFETIME = timedelta(hours=2)
