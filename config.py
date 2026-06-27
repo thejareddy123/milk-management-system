@@ -14,12 +14,14 @@ class Config:
     MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD")
     MYSQL_DB = os.getenv("MYSQL_DB")
     MYSQL_CURSORCLASS = "DictCursor"
+    MYSQL_PORT = int(os.environ.get("MYSQL_PORT", 3306))
 
     # Session
     PERMANENT_SESSION_LIFETIME = timedelta(hours=2)
     SESSION_COOKIE_SECURE = False
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = "Lax"
+
 
     # Email
     MAIL_SERVER = os.getenv("MAIL_SERVER")
